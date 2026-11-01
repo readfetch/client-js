@@ -1,6 +1,6 @@
 {
   "name": "@readfetch/client",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "x402 REST client for readfetch.com (probe, text, …)",
   "type": "module",
   "repository": {
