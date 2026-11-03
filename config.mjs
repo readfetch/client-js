@@ -109,15 +109,45 @@ export function x402Network(env = process.env) {
   return "eip155:8453";
 }
 
+/** @param {string} raw */
+export function normalizePrivateKey(raw) {
+  const trimmed = String(raw ?? "").trim();
+  if (!trimmed) {
+    throw new Error("private_key is required");
+  }
+  const hex = trimmed.startsWith("0x") ? trimmed : `0x${trimmed}`;
+  if (!/^0x[0-9a-fA-F]{64}$/.test(hex)) {
+    throw new Error("private_key must be 64 hex bytes (optional 0x prefix)");
+  }
+  return hex.toLowerCase();
+}
+
 /** @param {NodeJS.ProcessEnv} [env] */
 export function loadAccountFromEnv(env = process.env) {
   const raw = env.EVM_PRIVATE_KEY?.trim() || env.X402_BUYER_KEY?.trim();
   if (!raw) {
     throw new Error("Set EVM_PRIVATE_KEY (Base wallet with USDC)");
   }
-  const hex = raw.startsWith("0x") ? raw : `0x${raw}`;
-  if (!/^0x[0-9a-fA-F]{64}$/.test(hex)) {
-    throw new Error("EVM_PRIVATE_KEY must be 64 hex bytes (optional 0x prefix)");
+  return normalizePrivateKey(raw);
+}
+
+/**
+ * Env overlay for {@link Client} — constructor args override process.env.
+ * @param {{ privateKey?: string, private_key?: string, baseUrl?: string, base_url?: string, maxPaymentUsd?: string, max_payment_usd?: string }} [options]
+ */
+export function clientEnvFromOptions(options = {}) {
+  const env = { ...process.env };
+  const key = options.privateKey ?? options.private_key;
+  if (key != null && String(key).trim()) {
+    env.EVM_PRIVATE_KEY = normalizePrivateKey(key);
   }
-  return hex.toLowerCase();
+  const base = options.baseUrl ?? options.base_url;
+  if (base != null && String(base).trim()) {
+    env.READFETCH_BASE_URL = String(base).replace(/\/$/, "");
+  }
+  const cap = options.maxPaymentUsd ?? options.max_payment_usd;
+  if (cap != null && String(cap).trim()) {
+    env.READFETCH_MAX_PAYMENT_USD = String(cap).trim();
+  }
+  return env;
 }

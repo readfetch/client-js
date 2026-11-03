@@ -1,6 +1,6 @@
 {
   "name": "@readfetch/client",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "x402 REST client for readfetch.com (probe, text, …)",
   "type": "module",
   "repository": {
@@ -25,8 +25,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "node test-static.mjs && node test-endpoints.mjs && node test-catalog-sync.mjs",
-    "prepublishOnly": "node --check index.mjs && node --check config.mjs && node --check endpoints.mjs && node --check payment.mjs && node test-static.mjs && node test-endpoints.mjs && node test-catalog-sync.mjs"
+    "test": "node test-static.mjs && node test-client.mjs && node test-endpoints.mjs && node test-catalog-sync.mjs",
+    "prepublishOnly": "node --check index.mjs && node --check config.mjs && node --check endpoints.mjs && node --check payment.mjs && node test-static.mjs && node test-client.mjs && node test-endpoints.mjs && node test-catalog-sync.mjs"
   },
   "dependencies": {
     "@x402/evm": "2.29.0",

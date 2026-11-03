@@ -15,6 +15,7 @@ import {
   parseMaxPaymentUsd,
   readfetchBase,
   readfetchUrl,
+  clientEnvFromOptions,
   x402Network,
 } from "./config.mjs";
 import { buyerAddress, paymentConfig, paymentFromResponse } from "./payment.mjs";
@@ -22,7 +23,9 @@ import { buyerAddress, paymentConfig, paymentFromResponse } from "./payment.mjs"
 export {
   isDevHost,
   isProductionHost,
+  clientEnvFromOptions,
   loadAccountFromEnv,
+  normalizePrivateKey,
   parseMaxPaymentUsd,
   readfetchBase,
   readfetchUrl,
@@ -308,6 +311,37 @@ export function readfetchCrawl(body, env = process.env) {
 /** GET /v1/crawl/{id} — poll async crawl (free). */
 export function readfetchCrawlStatus(jobId, env = process.env) {
   return call("crawl_status", null, { pathParams: { id: jobId }, env });
+}
+
+/**
+ * One-line setup: `new Client({ privateKey: "0x…" })` then `await client.fetch(url)`.
+ * Paid routes use the same x402 402 → sign → retry as `call()`.
+ */
+export class Client {
+  /** @param {{ privateKey?: string, private_key?: string, baseUrl?: string, base_url?: string, maxPaymentUsd?: string, max_payment_usd?: string }} [options] */
+  constructor(options = {}) {
+    this.env = clientEnvFromOptions(options);
+  }
+
+  /** `POST /v1/text` — response includes `text`. */
+  text(url) {
+    const body = typeof url === "string" ? { url } : url;
+    return call("text", body, { env: this.env });
+  }
+
+  /** Same as `text` (article read, not raw `/v1/fetch`). */
+  fetch(url) {
+    return this.text(url);
+  }
+
+  probe(url) {
+    return probe(url, this.env);
+  }
+
+  /** Any published route — same as top-level `call()` with this client's env. */
+  call(name, body, options = {}) {
+    return callWithMeta(name, body, { env: this.env, ...options }).then(({ data }) => data);
+  }
 }
 
 /** OpenAI Agents SDK — attach `execute` to your host's tool wrapper. */

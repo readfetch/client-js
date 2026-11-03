@@ -1,14 +1,17 @@
 import assert from "node:assert/strict";
 import {
+  clientEnvFromOptions,
   isDevHost,
   isProductionHost,
   loadAccountFromEnv,
+  normalizePrivateKey,
   parseMaxPaymentUsd,
   readfetchBase,
   readfetchUrl,
   x402Network,
 } from "./config.mjs";
 import { buyerAddress, paymentConfig, paymentFromResponse } from "./payment.mjs";
+import { Client } from "./index.mjs";
 
 assert.equal(isProductionHost("readfetch.com"), true);
 assert.equal(isProductionHost("READFETCH.COM."), true);
@@ -81,5 +84,13 @@ assert.equal(pay.receipt, "r1");
 assert.equal(pay.paymentResponse, "p1");
 assert.equal(pay.creditApplied, "0.002");
 assert.equal(pay.paymentRequired, null);
+
+const key = "0x" + "b".repeat(64);
+assert.equal(normalizePrivateKey(key), key);
+const env = clientEnvFromOptions({ privateKey: key, maxPaymentUsd: "0.25" });
+assert.equal(env.EVM_PRIVATE_KEY, key);
+assert.equal(env.READFETCH_MAX_PAYMENT_USD, "0.25");
+const rf = new Client({ privateKey: key });
+assert.equal(rf.env.EVM_PRIVATE_KEY, key);
 
 console.log("client-js: ok");

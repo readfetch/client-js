@@ -12,6 +12,18 @@ npm install @readfetch/client
 
 ## Use
 
+```javascript
+import { Client } from "@readfetch/client";
+
+const rf = new Client({ privateKey: "0x…" }); // or export EVM_PRIVATE_KEY
+const result = await rf.fetch("https://example.com/article");
+console.log(result.text);
+```
+
+`fetch()` is **`/v1/text`** (field `text`). On **402**, `@x402/fetch` signs and retries — no extra config.
+
+Full API (every route, feedback, claims):
+
 ```bash
 export EVM_PRIVATE_KEY=0x…   # not needed for probe / feedback / crawl_status
 ```
@@ -33,9 +45,9 @@ if (!check.challenge) {
   // or: await call("text", { url: "https://example.com" });
 }
 
-await readfetchMap({ url: "https://example.com", max_urls: 20 });
+await readfetchMap({ url: "https://example.com", limit: 20 });
 const job = await readfetchCrawl({ url: "https://example.com", max_pages: 3 });
-await readfetchCrawlStatus(job.id);
+await readfetchCrawlStatus(job.job_id);
 
 await submitFeedback(requestId, "integration", "402 confused my parser");
 // await submitClaim({ receipt, reason, address, signature });
@@ -100,6 +112,6 @@ await http("https://readfetch.com/v1/map", { method: "POST", body: "…" });
 | `READFETCH_MAX_PAYMENT_USD` | `1` | Per-payment spend cap |
 | `READFETCH_DEV=1` | off | Allow `localhost` / `127.0.0.1` + Sepolia (`eip155:84532`) |
 
-Framework examples: [readfetch/readfetch](https://github.com/readfetch/readfetch/tree/main/examples). MCP: [`@readfetch/mcp-x402-proxy@0.1.12`](https://github.com/readfetch/mcp-x402-proxy).
+Framework examples: [readfetch/readfetch](https://github.com/readfetch/readfetch/tree/main/examples). MCP: [`@readfetch/mcp-x402-proxy@0.1.14`](https://github.com/readfetch/mcp-x402-proxy).
 
 Feedback vs claims: [readfetch.com/docs#feedback](https://readfetch.com/docs#feedback).
