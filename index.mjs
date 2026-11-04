@@ -100,7 +100,7 @@ export function paidFetch(env = process.env) {
   return wrapped;
 }
 
-/** Alias — `@x402/fetch` wrapper that signs EIP-3009 and retries on 402. */
+/** Alias — `@x402/fetch` wrapper that signs and retries on 402. */
 export const createPaidFetch = paidFetch;
 
 /** `x-request-id` from any readfetch JSON response (for `submitFeedback`). */

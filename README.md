@@ -76,7 +76,7 @@ Integrator: `submitFeedback`, `submitClaim`. Generic: `call("search", { query: "
 
 ## Payment (x402)
 
-Paid catalog routes use **`@x402/fetch`**: first request may return **402** with `PAYMENT-REQUIRED`; the client signs (EIP-3009) and retries automatically.
+Paid catalog routes use **`@x402/fetch`**: first request may return **402** with `PAYMENT-REQUIRED`; the client signs and retries automatically.
 
 ```javascript
 import {
