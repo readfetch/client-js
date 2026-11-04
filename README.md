@@ -34,6 +34,7 @@ import {
   probeWithMeta,
   readfetchText,
   readfetchMap,
+  readfetchCrawl,
   readfetchCrawlStatus,
   submitFeedback,
   submitClaim,
