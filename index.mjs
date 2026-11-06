@@ -244,7 +244,7 @@ export async function probe(url, env = process.env) {
 
 /** Like `probe`, but includes `requestId` from response headers. */
 export async function probeWithMeta(url, env = process.env) {
-  return callWithMeta("probe", { url }, { env });
+  return callWithMeta("probe", { url: requiredString(url, "url") }, { env });
 }
 
 /** POST /v1/feedback — free; bind with `requestId` from a prior call's `X-Request-Id`. */
@@ -271,7 +271,30 @@ export async function submitFeedback(requestId, category, message, env = process
 
 /** POST /v1/claims — paid delivery dispute (receipt + signature). Not integrator feedback. */
 export async function submitClaim(claim, env = process.env) {
-  return call("claims", claim, { env });
+  return call("claims", normalizeClaim(claim), { env });
+}
+
+function requiredString(value, name) {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${name} is required`);
+  }
+  return value;
+}
+
+function normalizeClaim(claim) {
+  if (!claim || typeof claim !== "object" || Array.isArray(claim)) {
+    throw new Error("claim must be an object");
+  }
+  for (const name of ["receipt", "reason", "address", "signature"]) {
+    requiredString(claim[name], name);
+  }
+  if (!new Set(["empty", "truncated", "stale", "wrong_content"]).has(claim.reason)) {
+    throw new Error("reason must be empty, truncated, stale, or wrong_content");
+  }
+  if (claim.note !== undefined && (typeof claim.note !== "string" || claim.note.length > 500)) {
+    throw new Error("note must be at most 500 characters");
+  }
+  return claim;
 }
 
 /** POST /v1/text — x402 402 handling is automatic. */

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { Client, readfetchUrl } from "./index.mjs";
+import { Client, probe, readfetchUrl, submitClaim } from "./index.mjs";
 import { clientEnvFromOptions, normalizePrivateKey } from "./config.mjs";
 
 const key = "0x" + "a".repeat(64);
@@ -50,6 +50,13 @@ async function mockFetch(input, init) {
 globalThis.fetch = mockFetch;
 
 try {
+  await assert.rejects(() => probe(), /url is required/);
+  await assert.rejects(() => submitClaim({}), /receipt is required/);
+  await assert.rejects(
+    () => submitClaim({ receipt: "r", reason: "bad", address: "a", signature: "s" }),
+    /reason must be/,
+  );
+
   const probeClient = new Client({});
   const probeBody = await probeClient.probe("https://example.com");
   assert.equal(probeBody.text, "article");
