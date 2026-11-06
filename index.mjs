@@ -41,6 +41,7 @@ export {
 } from "./endpoints.mjs";
 
 const TIMEOUT_MS = 120_000;
+const USER_AGENT = "readfetch-client-js/0.1.15";
 
 const FEEDBACK_CATEGORIES = new Set(["integration", "docs", "site", "other"]);
 const MAX_FEEDBACK_REQUEST_ID_LEN = 256;
@@ -157,7 +158,11 @@ export async function callWithMeta(name, body, options = {}) {
   const url = readfetchUrl(env, path);
   const method = spec.method;
   /** @type {RequestInit} */
-  const init = { method, signal: AbortSignal.timeout(TIMEOUT_MS), headers: {} };
+  const init = {
+    method,
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+    headers: { "user-agent": USER_AGENT },
+  };
   if (method !== "GET") {
     init.headers["content-type"] = "application/json";
     init.body = JSON.stringify(body ?? {});
@@ -200,7 +205,7 @@ export async function quote(name, body, options = {}) {
   const init = {
     method,
     signal: AbortSignal.timeout(TIMEOUT_MS),
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", "user-agent": USER_AGENT },
     body: JSON.stringify(body ?? {}),
   };
   if (method === "GET") {

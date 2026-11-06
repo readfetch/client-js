@@ -40,7 +40,7 @@ async function mockFetch(input, init) {
     method = opts.method ?? "GET";
     body = typeof opts.body === "string" ? opts.body : undefined;
   }
-  calls.push({ url, method, body });
+  calls.push({ url, method, body, headers: input instanceof Request ? input.headers : new Headers(init?.headers) });
   return new Response(JSON.stringify({ text: "article", billed: true }), {
     status: 200,
     headers: { "content-type": "application/json" },
@@ -56,6 +56,7 @@ try {
   const probeCall = calls.find((c) => c.url.endsWith("/v1/probe"));
   assert.ok(probeCall);
   assert.equal(probeCall.method, "POST");
+  assert.equal(probeCall.headers.get("user-agent"), "readfetch-client-js/0.1.15");
 
   calls.length = 0;
   const paid = new Client({ privateKey: key });
@@ -64,6 +65,7 @@ try {
   const textCall = calls.find((c) => c.url.endsWith("/v1/text"));
   assert.ok(textCall, `expected /v1/text in ${calls.map((c) => c.url).join(", ")}`);
   assert.equal(textCall.method, "POST");
+  assert.equal(textCall.headers.get("user-agent"), "readfetch-client-js/0.1.15");
   assert.deepEqual(JSON.parse(textCall.body), { url: "https://example.com/article" });
 
   const page2 = await paid.text({ url: "https://example.com/other", format: "markdown" });
