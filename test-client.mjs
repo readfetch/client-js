@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { Client, probe, readfetchUrl, submitClaim } from "./index.mjs";
 import { clientEnvFromOptions, normalizePrivateKey } from "./config.mjs";
+
+const pkgVersion = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf8"),
+).version;
+const expectedUa = `readfetch-client-js/${pkgVersion}`;
 
 const key = "0x" + "a".repeat(64);
 
@@ -63,7 +69,7 @@ try {
   const probeCall = calls.find((c) => c.url.endsWith("/v1/probe"));
   assert.ok(probeCall);
   assert.equal(probeCall.method, "POST");
-  assert.equal(probeCall.headers.get("user-agent"), "readfetch-client-js/0.1.15");
+  assert.equal(probeCall.headers.get("user-agent"), expectedUa);
 
   calls.length = 0;
   const paid = new Client({ privateKey: key });
@@ -72,7 +78,7 @@ try {
   const textCall = calls.find((c) => c.url.endsWith("/v1/text"));
   assert.ok(textCall, `expected /v1/text in ${calls.map((c) => c.url).join(", ")}`);
   assert.equal(textCall.method, "POST");
-  assert.equal(textCall.headers.get("user-agent"), "readfetch-client-js/0.1.15");
+  assert.equal(textCall.headers.get("user-agent"), expectedUa);
   assert.deepEqual(JSON.parse(textCall.body), { url: "https://example.com/article" });
 
   const page2 = await paid.text({ url: "https://example.com/other", format: "markdown" });

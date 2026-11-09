@@ -1,5 +1,8 @@
 import { Buffer } from "node:buffer";
 import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { wrapFetchWithPaymentFromConfig } from "@x402/fetch";
 import { ExactEvmScheme } from "@x402/evm";
 import { privateKeyToAccount } from "viem/accounts";
@@ -41,7 +44,9 @@ export {
 } from "./endpoints.mjs";
 
 const TIMEOUT_MS = 120_000;
-const USER_AGENT = "readfetch-client-js/0.1.15";
+const __pkgDir = dirname(fileURLToPath(import.meta.url));
+const __pkg = JSON.parse(readFileSync(join(__pkgDir, "package.json"), "utf8"));
+const USER_AGENT = `readfetch-client-js/${__pkg.version}`;
 
 const FEEDBACK_CATEGORIES = new Set(["integration", "docs", "site", "other"]);
 const MAX_FEEDBACK_REQUEST_ID_LEN = 256;

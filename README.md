@@ -113,6 +113,6 @@ await http("https://readfetch.com/v1/map", { method: "POST", body: "…" });
 | `READFETCH_MAX_PAYMENT_USD` | `1` | Per-payment spend cap |
 | `READFETCH_DEV=1` | off | Allow `localhost` / `127.0.0.1` + Sepolia (`eip155:84532`) |
 
-Framework examples: [readfetch/readfetch](https://github.com/readfetch/readfetch/tree/main/examples). MCP: [`@readfetch/mcp-x402-proxy@0.1.15`](https://github.com/readfetch/mcp-x402-proxy).
+Framework examples: [readfetch/readfetch](https://github.com/readfetch/readfetch/tree/main/examples). MCP: [`@readfetch/mcp-x402-proxy@0.1.17`](https://github.com/readfetch/mcp-x402-proxy).
 
 Feedback vs claims: [readfetch.com/docs#feedback](https://readfetch.com/docs#feedback).
