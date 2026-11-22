@@ -104,6 +104,16 @@ await http("https://readfetch.com/v1/map", { method: "POST", body: "…" });
 
 `pay(name, body)` is an alias for `call()` on paid routes. Free routes (`probe`, `feedback`, `crawl_status`) use plain `fetch`.
 
+### No wallet yet?
+
+`text`, `scrape`, `section` and `diff` **fall back to the free probe** when neither
+`EVM_PRIVATE_KEY` nor `X402_BUYER_KEY` is set. The call returns the same content plus
+`freeTrial: true` and a `note`, so importing the client before you have a wallet does not turn a
+page read into an error about a private key. The fallback does not exist for `screenshot`, `pdf`,
+`batch`, `crawl` or `fetch` — a probe cannot produce those — and a *malformed* key still throws
+rather than silently downgrading. `quote()` never falls back: it is the "what would this cost"
+call and needs no wallet.
+
 ## Environment
 
 | Variable | Default | Purpose |

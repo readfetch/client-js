@@ -122,6 +122,13 @@ export function normalizePrivateKey(raw) {
   return hex.toLowerCase();
 }
 
+/** True when a signing key is configured. A malformed key still counts as configured: the
+ *  parse error is the honest answer to a typo, and silently downgrading would hide it.
+ *  @param {NodeJS.ProcessEnv} [env] */
+export function hasWallet(env = process.env) {
+  return Boolean(env.EVM_PRIVATE_KEY?.trim() || env.X402_BUYER_KEY?.trim());
+}
+
 /** @param {NodeJS.ProcessEnv} [env] */
 export function loadAccountFromEnv(env = process.env) {
   const raw = env.EVM_PRIVATE_KEY?.trim() || env.X402_BUYER_KEY?.trim();

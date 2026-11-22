@@ -14,6 +14,7 @@ import {
   exportName,
 } from "./endpoints.mjs";
 import {
+  hasWallet,
   loadAccountFromEnv,
   parseMaxPaymentUsd,
   readfetchBase,
@@ -75,6 +76,10 @@ function parseJsonBody(text, status) {
 }
 
 /** @param {string} privateKey @param {NodeJS.ProcessEnv} env */
+/** Page-read endpoints a probe can stand in for. A probe cannot produce a screenshot, a PDF
+ *  body, a crawl job or raw bytes, so those keep the real error. */
+const FREE_PROBE_FALLBACK = new Set(["text", "scrape", "section", "diff"]);
+
 function paidFetchCacheKey(privateKey, env) {
   const fingerprint = createHash("sha256").update(privateKey, "utf8").digest("hex");
   return `${fingerprint}:${x402Network(env)}:${parseMaxPaymentUsd(env)}`;
@@ -159,6 +164,24 @@ export async function callWithMeta(name, body, options = {}) {
     throw new Error(`unknown endpoint \`${name}\``);
   }
   const env = options.env ?? process.env;
+  // Installed but unfunded is the common state for a library that ships in a package: the
+  // caller imported it before they had a wallet. Answering a page read with the free probe is
+  // more use than an error about EVM_PRIVATE_KEY — and it is the same content minus the extras.
+  if (!spec.free && !hasWallet(env) && FREE_PROBE_FALLBACK.has(name)) {
+    const url = body?.url;
+    if (typeof url === "string" && url.trim()) {
+      const trial = await callWithMeta("probe", { url }, { env });
+      return {
+        ...trial,
+        freeTrial: true,
+        note:
+          "No wallet configured, so this is the free probe for the same url: full extracted " +
+          "text for the first 3 calls per IP per day, a ~400-character preview after that. It is " +
+          "not the paid route — no markdown structure, no per-call metadata, no receipt. Set " +
+          "EVM_PRIVATE_KEY (or X402_BUYER_KEY) to a funded Base USDC wallet to call the paid route.",
+      };
+    }
+  }
   const path = endpointPath(name, options.pathParams ?? {});
   const url = readfetchUrl(env, path);
   const method = spec.method;
