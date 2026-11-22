@@ -80,6 +80,12 @@ function parseJsonBody(text, status) {
  *  body, a crawl job or raw bytes, so those keep the real error. */
 const FREE_PROBE_FALLBACK = new Set(["text", "scrape", "section", "diff"]);
 
+const FREE_PROBE_NOTE =
+  "No wallet configured, so this is the free probe for the same url: full extracted text for " +
+  "the first 3 calls per IP per day, a ~400-character preview after that. It is not the paid " +
+  "route — no markdown structure, no per-call metadata, no receipt. Set EVM_PRIVATE_KEY (or " +
+  "X402_BUYER_KEY) to a funded Base USDC wallet to call the paid route.";
+
 function paidFetchCacheKey(privateKey, env) {
   const fingerprint = createHash("sha256").update(privateKey, "utf8").digest("hex");
   return `${fingerprint}:${x402Network(env)}:${parseMaxPaymentUsd(env)}`;
@@ -171,15 +177,10 @@ export async function callWithMeta(name, body, options = {}) {
     const url = body?.url;
     if (typeof url === "string" && url.trim()) {
       const trial = await callWithMeta("probe", { url }, { env });
-      return {
-        ...trial,
-        freeTrial: true,
-        note:
-          "No wallet configured, so this is the free probe for the same url: full extracted " +
-          "text for the first 3 calls per IP per day, a ~400-character preview after that. It is " +
-          "not the paid route — no markdown structure, no per-call metadata, no receipt. Set " +
-          "EVM_PRIVATE_KEY (or X402_BUYER_KEY) to a funded Base USDC wallet to call the paid route.",
-      };
+      // The marker goes in `data` as well as the envelope: `call()` returns `data` alone, and a
+      // trial answer it cannot be told apart from a paid one is a misleading success.
+      const marked = { freeTrial: true, note: FREE_PROBE_NOTE };
+      return { ...trial, ...marked, data: { ...trial.data, ...marked } };
     }
   }
   const path = endpointPath(name, options.pathParams ?? {});

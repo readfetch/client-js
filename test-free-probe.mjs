@@ -33,10 +33,18 @@ const env = { READFETCH_BASE_URL: "https://readfetch.com" };
 
 // A page read with no wallet goes to /v1/probe and says so.
 const result = await callWithMeta("text", { url: "https://example.com" }, { env });
+{
+  const d = await import("./index.mjs").then((m) => m.call("text", { url: "https://example.com" }, { env }));
+  assert.equal(d.freeTrial, true, "call() must expose freeTrial");
+}
 assert.equal(seen.at(-1), "https://readfetch.com/v1/probe");
 assert.equal(result.freeTrial, true);
 assert.match(result.note, /free probe/);
 assert.equal(result.data.preview, "the whole page");
+// `call()` returns `data` alone — the marker has to survive that, or a trial looks like a
+// paid success.
+assert.equal(result.data.freeTrial, true);
+assert.match(result.data.note, /free probe/);
 
 // Endpoints a probe cannot stand in for keep the wallet error.
 for (const name of ["screenshot", "pdf", "batch", "crawl", "fetch"]) {
